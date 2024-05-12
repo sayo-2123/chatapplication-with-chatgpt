@@ -1,4 +1,5 @@
 import React from 'react'
+import { BiLogOut } from 'react-icons/bi'
 
 function Sidebar() {
   return (
@@ -25,6 +26,11 @@ function Sidebar() {
             Room5
           </li>
         </ul>
+      </div>
+
+      <div className='text-lg flex items-center justify-evenly mb-2 cursor-pointer p-4 text-slate-100 hover:bg-slate-700 duration-150'>
+        <BiLogOut />
+        <span>ログアウト</span>
       </div>
     </div>
   )
