@@ -1,22 +1,30 @@
 'use client'
 
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
-import React, { useEffect } from 'react'
+import { collection, onSnapshot, orderBy, query, Timestamp } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react'
 import { BiLogOut } from 'react-icons/bi'
 import { db } from '../firebase';
 
+type Room = {
+  id: string;
+  name: string;
+  createdAt: Timestamp;
+};
+
 function Sidebar() {
+  const [rooms, setRooms] = useState<Room[]>([]);
 
   useEffect(() => {
     const fetchRooms = async () => {
       const roomCollectionRef = collection(db, "rooms");
       const q = query(roomCollectionRef, orderBy("createdAt"));
       const unsubscribe = onSnapshot(q, (snapshot) => {
-        const newRooms = snapshot.docs.map((doc) => ({
+        const newRooms: Room[] = snapshot.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data(),
-        }))
-        console.log(newRooms);
+          name: doc.data().name,
+          createdAt: doc.data().createdAt,
+        }));
+        setRooms(newRooms);
       })
     };
     fetchRooms();
@@ -30,10 +38,14 @@ function Sidebar() {
           <h1 className='text-white text-xl font-semibold p-4'>New Chat</h1>
         </div>
         <ul>
-          <li className='cursor-pointer border-b p-4 text-slate-100 hover:bg-slate-700 duration-150'>
-            Room1
-          </li>
-          <li className='cursor-pointer border-b p-4 text-slate-100 hover:bg-slate-700 duration-150'>
+          {rooms.map((room) => (
+            <li key={room.id}
+              className='cursor-pointer border-b p-4 text-slate-100 hover:bg-slate-700 duration-150'>
+              {room.name}
+            </li>
+          ))}
+
+          {/* <li className='cursor-pointer border-b p-4 text-slate-100 hover:bg-slate-700 duration-150'>
             Room2
           </li>
           <li className='cursor-pointer border-b p-4 text-slate-100 hover:bg-slate-700 duration-150'>
@@ -41,10 +53,8 @@ function Sidebar() {
           </li>
           <li className='cursor-pointer border-b p-4 text-slate-100 hover:bg-slate-700 duration-150'>
             Room4
-          </li>
-          <li className='cursor-pointer border-b p-4 text-slate-100 hover:bg-slate-700 duration-150'>
-            Room5
-          </li>
+          </li> */}
+
         </ul>
       </div>
 
