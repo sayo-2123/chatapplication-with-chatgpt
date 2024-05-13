@@ -1,6 +1,6 @@
 'use client'
 
-import { collection, onSnapshot, orderBy, query, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, Timestamp, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
 import { BiLogOut } from 'react-icons/bi'
 import { db } from '../firebase';
@@ -17,7 +17,9 @@ function Sidebar() {
   useEffect(() => {
     const fetchRooms = async () => {
       const roomCollectionRef = collection(db, "rooms");
-      const q = query(roomCollectionRef, orderBy("createdAt"));
+      const q = query(roomCollectionRef,
+        where("userId", "==", "VmqKPEuzS3ccVUOTSs7U6OA3Drs1"),
+        orderBy("createdAt"));
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const newRooms: Room[] = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -26,7 +28,11 @@ function Sidebar() {
         }));
         setRooms(newRooms);
       })
+      return () => {
+        unsubscribe();
+      }
     };
+
     fetchRooms();
   }, [])
 
