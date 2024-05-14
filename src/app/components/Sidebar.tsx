@@ -4,6 +4,7 @@ import { collection, onSnapshot, orderBy, query, Timestamp, where } from 'fireba
 import React, { useEffect, useState } from 'react'
 import { BiLogOut } from 'react-icons/bi'
 import { db } from '../firebase';
+import { useAppContext } from '@/context/AppContext';
 
 type Room = {
   id: string;
@@ -12,29 +13,34 @@ type Room = {
 };
 
 function Sidebar() {
+
+  const { user, userId } = useAppContext();
+
   const [rooms, setRooms] = useState<Room[]>([]);
 
   useEffect(() => {
-    const fetchRooms = async () => {
-      const roomCollectionRef = collection(db, "rooms");
-      const q = query(roomCollectionRef,
-        where("userId", "==", "VmqKPEuzS3ccVUOTSs7U6OA3Drs1"),
-        orderBy("createdAt"));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const newRooms: Room[] = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          name: doc.data().name,
-          createdAt: doc.data().createdAt,
-        }));
-        setRooms(newRooms);
-      })
-      return () => {
-        unsubscribe();
-      }
-    };
+    if (user) {
+      const fetchRooms = async () => {
+        const roomCollectionRef = collection(db, "rooms");
+        const q = query(roomCollectionRef,
+          where("userId", "==", userId),
+          orderBy("createdAt"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+          const newRooms: Room[] = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            name: doc.data().name,
+            createdAt: doc.data().createdAt,
+          }));
+          setRooms(newRooms);
+        })
+        return () => {
+          unsubscribe();
+        }
+      };
 
-    fetchRooms();
-  }, [])
+      fetchRooms();
+    }
+  }, [userId])
 
   return (
     <div className=' bg-custom-blue h-full overflow-y-auto px-5 flex flex-col'>
