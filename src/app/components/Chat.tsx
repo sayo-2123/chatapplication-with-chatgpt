@@ -21,10 +21,10 @@ const Chat = () => {
   useEffect(() => {
     if (selectedRoom) {
       const fetchMessages = async () => {
-        const roomDocRef = collection(db, "rooms", selectedRoom);
-        const messageCollectionRef = collection(roomDocRef, "messages");
+        const roomDocRef = doc(db, "rooms", selectedRoom);
+        const messagesCollectionRef = collection(roomDocRef, "messages");
 
-        const q = query(messageCollectionRef, orderBy("createdAt"));
+        const q = query(messagesCollectionRef, orderBy("createdAt"));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
           const newMessages = snapshot.docs.map((doc) => doc.data() as Message);
@@ -33,25 +33,23 @@ const Chat = () => {
 
         return () => {
           unsubscribe();
-        }
-      }
+        };
+      };
+
       fetchMessages();
     }
-
   }, [selectedRoom]);
 
   const sendMessage = async () => {
-    if (inputMessage.trim()) return;
-
+    if (!inputMessage.trim()) return;
     const messageDate = {
       text: inputMessage,
       sender: "user",
-      createdAt: serverTimestamp,
+      createdAt: serverTimestamp(),
     }
 
-
     //メッセージをFirestoreに保存する
-    const roomDocRef = doc(db, "rooms", "VmqKPEuzS3ccVUOTSs7U6OA3Drs1");
+    const roomDocRef = doc(db, "rooms", selectedRoom!);
     const messageCollectionRef = collection(roomDocRef, "messages")
     await addDoc(messageCollectionRef, messageDate);
   }
@@ -60,17 +58,25 @@ const Chat = () => {
     <div className='bg-gray-300 h-full p-4 flex flex-col'>
       <h1 className='text-2xl text-white font-semibold mb-4'>Room 1</h1>
       <div className='flex-grow overflow-y-auto mb-4'>
-        <div className='text-right'>
-          <div className='bg-blue-500 inline-block rounded px-4 py-2 mb-2'>
-            <p className='text-white font-medium'>Hello</p>
-          </div>
-        </div>
-        <div className='text-left'>
-          <div className='bg-green-500 inline-block rounded px-4 py-2 mb-2'>
-            <p className='text-white font-medium'>How are you</p>
-          </div>
-        </div>
+        {messages.map((message) => (
+
+          <>
+
+            <div className='text-right'>
+              <div className='bg-blue-500 inline-block rounded px-4 py-2 mb-2'>
+                <p className='text-white font-medium'>{message.text}</p>
+              </div>
+            </div>
+            <div className='text-left'>
+              <div className='bg-green-500 inline-block rounded px-4 py-2 mb-2'>
+                <p className='text-white font-medium'>{message.text}</p>
+              </div>
+            </div>
+
+          </>
+        ))}
       </div>
+
       <div className='flex-shrink-0 relative'>
         <input type='text'
           placeholder='Send a Message'
