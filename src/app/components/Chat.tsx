@@ -5,6 +5,7 @@ import { FaPaperPlane } from 'react-icons/fa';
 import { db } from '../firebase';
 import { useAppContext } from '@/context/AppContext';
 import OpenAI from 'openai';
+import LoadingIcons from 'react-loading-icons';
 
 type Message = {
   text: string;
@@ -21,6 +22,7 @@ const Chat = () => {
   const { selectedRoom } = useAppContext();
   const [inputMessage, setInputMessage] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
 
   //各Roomにおけるメッセージを取得
@@ -60,12 +62,16 @@ const Chat = () => {
     const messageCollectionRef = collection(roomDocRef, "messages")
     await addDoc(messageCollectionRef, messageDate);
 
+    setInputMessage("");
+    setIsLoading(true);
 
     //openAIからの返信
     const gpt3Response = await openai.chat.completions.create({
       messages: [{ role: "user", content: inputMessage }],
       model: 'gpt-3.5-turbo',
     });
+
+    setIsLoading(false);
 
     const botResponse = gpt3Response.choices[0].message.content;
     await addDoc(messageCollectionRef, {
@@ -92,6 +98,7 @@ const Chat = () => {
             </div>
           </div>
         ))}
+        {isLoading && <LoadingIcons.TailSpin />}
       </div>
 
       <div className='flex-shrink-0 relative'>
@@ -99,6 +106,12 @@ const Chat = () => {
           placeholder='Send a Message'
           className='border-2 rounded w-full pr-10 focus:outline-none p-2 '
           onChange={(e) => setInputMessage(e.target.value)}
+          value={inputMessage}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              sendMessage();
+            }
+          }}
         />
         <button className='absolute inset-y-0 right-4 flex items-center'
           onClick={() => sendMessage()}>
