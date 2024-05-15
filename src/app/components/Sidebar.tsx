@@ -5,7 +5,6 @@ import React, { useEffect, useState } from 'react'
 import { BiLogOut } from 'react-icons/bi'
 import { auth, db } from '../firebase';
 import { useAppContext } from '@/context/AppContext';
-import { setUserId } from 'firebase/analytics';
 
 type Room = {
   id: string;
