@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { FaPaperPlane } from 'react-icons/fa';
 import { db } from '../firebase';
 import { useAppContext } from '@/context/AppContext';
+import OpenAI from 'openai';
 
 type Message = {
   text: string;
@@ -12,6 +13,11 @@ type Message = {
 }
 
 const Chat = () => {
+
+  const openai = new OpenAI({
+    apiKey: process.env.NEXT_PUBLIC_OPENAI_KEY,
+    dangerouslyAllowBrowser: true
+  });
   const { selectedRoom } = useAppContext();
   const [inputMessage, setInputMessage] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -42,6 +48,7 @@ const Chat = () => {
 
   const sendMessage = async () => {
     if (!inputMessage.trim()) return;
+
     const messageDate = {
       text: inputMessage,
       sender: "user",
@@ -52,6 +59,20 @@ const Chat = () => {
     const roomDocRef = doc(db, "rooms", selectedRoom!);
     const messageCollectionRef = collection(roomDocRef, "messages")
     await addDoc(messageCollectionRef, messageDate);
+
+
+    //openAIからの返信
+    const gpt3Response = await openai.chat.completions.create({
+      messages: [{ role: "user", content: inputMessage }],
+      model: 'gpt-3.5-turbo',
+    });
+
+    const botResponse = gpt3Response.choices[0].message.content;
+    await addDoc(messageCollectionRef, {
+      text: botResponse,
+      sender: "bot",
+      createdAt: serverTimestamp(),
+    })
   }
 
   return (
