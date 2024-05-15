@@ -5,7 +5,6 @@ import React, { useEffect, useState } from 'react'
 import { BiLogOut } from 'react-icons/bi'
 import { auth, db } from '../firebase';
 import { useAppContext } from '@/context/AppContext';
-import { Auth } from 'firebase/auth';
 
 type Room = {
   id: string;
@@ -15,7 +14,7 @@ type Room = {
 
 function Sidebar() {
 
-  const { user, userId, setSelectedRoom } = useAppContext();
+  const { user, userId, setSelectedRoom, setSelectedRoomName } = useAppContext();
 
   const [rooms, setRooms] = useState<Room[]>([]);
 
@@ -43,8 +42,10 @@ function Sidebar() {
     }
   }, [userId])
 
-  const selectRoom = (roomId: string) => {
-    setSelectedRoom(roomId)
+  const selectRoom = (roomId: string, roomName: string) => {
+    setSelectedRoom(roomId);
+    setSelectedRoomName(roomName)
+
   };
 
   const addNewRoom = async () => {
@@ -61,7 +62,7 @@ function Sidebar() {
 
   const handleLogout = () => {
     auth.signOut();
-  }
+  };
 
 
   return (
@@ -77,7 +78,7 @@ function Sidebar() {
             <li
               key={room.id}
               className='cursor-pointer border-b p-4 text-slate-100 hover:bg-slate-700 duration-150'
-              onClick={(() => selectRoom(room.id))}>
+              onClick={(() => selectRoom(room.id, room.name))}>
               {room.name}
             </li>
           ))}
@@ -87,12 +88,14 @@ function Sidebar() {
 
       {user && (
         <div className="mb-2 p-4 text-slate-100 text-lg font-medium">
-          {user.email}</div>
+          {user.email}
+        </div>
       )}
 
       <div
-        onClick={handleLogout}
-        className='text-lg flex items-center justify-evenly mb-2 cursor-pointer p-4 text-slate-100 hover:bg-slate-700 duration-150'>
+        onClick={() => handleLogout}
+        className='text-lg flex items-center justify-evenly mb-2 cursor-pointer p-4 text-slate-100 hover:bg-slate-700 duration-150'
+      >
         <BiLogOut />
         <span >ログアウト</span>
       </div>
@@ -100,4 +103,4 @@ function Sidebar() {
   )
 }
 
-export default Sidebar
+export default Sidebar;

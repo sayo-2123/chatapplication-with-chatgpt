@@ -1,5 +1,5 @@
 'use client'
-import Image from "next/image"
+
 import Sidebar from "./components/Sidebar"
 import Chat from "./components/Chat"
 import { useAppContext } from "@/context/AppContext"

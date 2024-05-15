@@ -1,6 +1,6 @@
 'use client'
 import { onSnapshot, collection, doc, addDoc, serverTimestamp, query, orderBy, Timestamp } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { FaPaperPlane } from 'react-icons/fa';
 import { db } from '../firebase';
 import { useAppContext } from '@/context/AppContext';
@@ -19,10 +19,12 @@ const Chat = () => {
     apiKey: process.env.NEXT_PUBLIC_OPENAI_KEY,
     dangerouslyAllowBrowser: true
   });
-  const { selectedRoom } = useAppContext();
+  const { selectedRoom, selectedRoomName } = useAppContext();
   const [inputMessage, setInputMessage] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const scrollDiv = useRef<HTMLDivElement>(null);
 
 
   //各Roomにおけるメッセージを取得
@@ -47,6 +49,16 @@ const Chat = () => {
       fetchMessages();
     }
   }, [selectedRoom]);
+
+  useEffect(() => {
+    if (scrollDiv.current) {
+      const element = scrollDiv.current;
+      element.scrollTo({
+        top: element.scrollHeight,
+        behavior: "smooth",
+      })
+    }
+  }, [messages])
 
   const sendMessage = async () => {
     if (!inputMessage.trim()) return;
@@ -83,8 +95,10 @@ const Chat = () => {
 
   return (
     <div className='bg-gray-300 h-full p-4 flex flex-col'>
-      <h1 className='text-2xl text-white font-semibold mb-4'>Room 1</h1>
-      <div className='flex-grow overflow-y-auto mb-4'>
+      <h1 className='text-2xl text-white font-semibold mb-4'>
+        {selectedRoomName}
+      </h1>
+      <div className='flex-grow overflow-y-auto mb-4' ref={scrollDiv}>
         {messages.map((message, index) => (
           <div key={index}
             className={message.sender === "user" ? "text-right" : "text-left"}
